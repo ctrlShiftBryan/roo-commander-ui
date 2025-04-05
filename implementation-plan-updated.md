@@ -52,7 +52,7 @@ sequenceDiagram
 
 ### 1. Remove Vitest & Add Bun Types (If needed)
 
-*(This step was performed interactively)*
+_(This step was performed interactively)_
 
 ```bash
 # Remove Vitest dependencies (if previously added)
@@ -67,7 +67,7 @@ bun add -d bun-types
 
 ### 2. Create Updated File System Scanner Module
 
-*(Code remains the same as previous version)*
+_(Code remains the same as previous version)_
 
 Create a utility module that will scan the file system and generate a tree structure matching the sample:
 
@@ -79,7 +79,7 @@ import path from 'node:path';
 export interface FileNode {
   name: string;
   tokens: number;
-  type: "file" | "folder";
+  type: 'file' | 'folder';
   checked: boolean;
   expanded?: boolean;
   children?: FileNode[];
@@ -111,17 +111,17 @@ export function scanDirectory(
   const baseName = path.basename(directoryPath);
 
   // Check if directory should be marked as pending
-  const isPending = isPendingPatterns.some(pattern => pattern.test(directoryPath));
+  const isPending = isPendingPatterns.some((pattern) => pattern.test(directoryPath));
 
-  if (excludePatterns.some(pattern => pattern.test(directoryPath))) {
+  if (excludePatterns.some((pattern) => pattern.test(directoryPath))) {
     return {
       name: baseName,
       tokens: 0,
-      type: "folder",
+      type: 'folder',
       checked: true,
       expanded: false,
       children: [],
-      isPending
+      isPending,
     };
   }
 
@@ -135,24 +135,24 @@ export function scanDirectory(
       const entryPath = path.join(directoryPath, entry.name);
 
       // Skip excluded directories/files based on the exclude pattern
-      if (excludePatterns.some(pattern => pattern.test(entryPath))) {
+      if (excludePatterns.some((pattern) => pattern.test(entryPath))) {
         continue;
       }
 
-      const entryIsPending = isPendingPatterns.some(pattern => pattern.test(entryPath));
+      const entryIsPending = isPendingPatterns.some((pattern) => pattern.test(entryPath));
 
       if (entry.isDirectory()) {
         // If the directory itself matches a pending pattern, mark it and don't recurse
         if (entryIsPending) {
-           children.push({
-             name: entry.name,
-             tokens: 0, // Pending folders don't contribute tokens directly
-             type: "folder",
-             checked: true,
-             expanded: false,
-             children: [],
-             isPending: true
-           });
+          children.push({
+            name: entry.name,
+            tokens: 0, // Pending folders don't contribute tokens directly
+            type: 'folder',
+            checked: true,
+            expanded: false,
+            children: [],
+            isPending: true,
+          });
         } else {
           const subDir = scanDirectory(entryPath, excludePatterns, isPendingPatterns);
           children.push(subDir);
@@ -163,9 +163,9 @@ export function scanDirectory(
         children.push({
           name: entry.name,
           tokens: fileTokens,
-          type: "file",
+          type: 'file',
           checked: true,
-          isPending: false // Files are not marked pending individually here
+          isPending: false, // Files are not marked pending individually here
         });
         totalTokens += fileTokens;
       }
@@ -184,11 +184,11 @@ export function scanDirectory(
   return {
     name: baseName,
     tokens: totalTokens,
-    type: "folder",
+    type: 'folder',
     checked: true,
     expanded: true, // Root node starts expanded
     children,
-    isPending
+    isPending,
   };
 }
 
@@ -200,7 +200,7 @@ export function createFileData(rootDir: string, excludePatterns: RegExp[] = []):
 
 ### 3. Update Index Route with Loader and Sample UI
 
-*(Code remains the same as previous version)*
+_(Code remains the same as previous version)_
 
 ```typescript
 // app/routes/_index.tsx
@@ -402,7 +402,7 @@ export default function Home() {
 
 ### 4. Remove Vitest Configuration
 
-*(This step was performed interactively)*
+_(This step was performed interactively)_
 
 Delete the `vitest.config.ts` file.
 
@@ -412,7 +412,7 @@ rm vitest.config.ts
 
 ### 5. Update Test Setup File
 
-*(This step was performed interactively)*
+_(This step was performed interactively)_
 
 Update `test/setup.ts` to remove Vitest-specific code.
 
@@ -428,12 +428,12 @@ Update `test/setup.ts` to remove Vitest-specific code.
 // });
 
 // Add any other global setup needed for Bun's test environment
-console.log("Bun test setup file loaded.");
+console.log('Bun test setup file loaded.');
 ```
 
 ### 6. Update tsconfig.json
 
-*(This step was performed interactively)*
+_(This step was performed interactively)_
 
 Ensure `compilerOptions.types` includes `"bun-types"` and remove `"vitest/globals"`.
 
@@ -466,26 +466,42 @@ jest.mock('node:fs');
 jest.mock('node:path');
 
 // Helper type for mocked Dirent - includes parentPath and path
-type MockDirent = Required<Pick<Dirent, 'name' | 'isFile' | 'isDirectory' | 'isSymbolicLink' | 'isBlockDevice' | 'isCharacterDevice' | 'isFIFO' | 'isSocket' | 'parentPath' | 'path'>> & Partial<Dirent>;
+type MockDirent = Required<
+  Pick<
+    Dirent,
+    | 'name'
+    | 'isFile'
+    | 'isDirectory'
+    | 'isSymbolicLink'
+    | 'isBlockDevice'
+    | 'isCharacterDevice'
+    | 'isFIFO'
+    | 'isSocket'
+    | 'parentPath'
+    | 'path'
+  >
+> &
+  Partial<Dirent>;
 
 // Helper type for mocked Stats - use bigint for size as per TS error
-type MockStats = Omit<Stats, 'size'> & { size: bigint } & Pick<Stats, 'isDirectory'> & Partial<Stats>;
+type MockStats = Omit<Stats, 'size'> & { size: bigint } & Pick<Stats, 'isDirectory'> &
+  Partial<Stats>;
 
 // Helper function to create MockDirent objects
 const createMockDirent = (name: string, isDirectory: boolean, parentPath: string): MockDirent => {
-    const fullPath = `${parentPath}/${name}`; // Simple path join for mock
-    return {
-        name,
-        isFile: () => !isDirectory,
-        isDirectory: () => isDirectory,
-        isBlockDevice: () => false,
-        isCharacterDevice: () => false,
-        isSymbolicLink: () => false,
-        isFIFO: () => false,
-        isSocket: () => false,
-        parentPath: parentPath,
-        path: fullPath, // Add path property
-    };
+  const fullPath = `${parentPath}/${name}`; // Simple path join for mock
+  return {
+    name,
+    isFile: () => !isDirectory,
+    isDirectory: () => isDirectory,
+    isBlockDevice: () => false,
+    isCharacterDevice: () => false,
+    isSymbolicLink: () => false,
+    isFIFO: () => false,
+    isSocket: () => false,
+    parentPath: parentPath,
+    path: fullPath, // Add path property
+  };
 };
 
 describe('fileScanner', () => {
@@ -502,12 +518,16 @@ describe('fileScanner', () => {
     mockedPath.join.mockImplementation((...args: string[]) => args.join('/'));
     mockedPath.resolve.mockImplementation((p: string) => p); // Mock resolve
 
-    mockedFs.statSync.mockImplementation((p: fs.PathLike): MockStats => ({ // Add type for p
-      size: p.toString().includes('.txt') ? 400n : 200n, // Use bigint literal
-      isDirectory: () => !p.toString().includes('.'),
-      isFile: () => p.toString().includes('.'),
-      isSymbolicLink: () => false,
-    } as MockStats));
+    mockedFs.statSync.mockImplementation(
+      (p: fs.PathLike): MockStats =>
+        ({
+          // Add type for p
+          size: p.toString().includes('.txt') ? 400n : 200n, // Use bigint literal
+          isDirectory: () => !p.toString().includes('.'),
+          isFile: () => p.toString().includes('.'),
+          isSymbolicLink: () => false,
+        }) as MockStats
+    );
 
     mockedFs.readdirSync.mockImplementation((dirPath): MockDirent[] => {
       const parentPath = dirPath.toString();
@@ -519,9 +539,7 @@ describe('fileScanner', () => {
         ];
       }
       if (parentPath === '/test/dir1') {
-        return [
-          createMockDirent('file2.txt', false, parentPath),
-        ];
+        return [createMockDirent('file2.txt', false, parentPath)];
       }
       if (parentPath === '/test/node_modules') {
         return [];
@@ -541,24 +559,24 @@ describe('fileScanner', () => {
   });
 
   it('should exclude files/directories matching exclude patterns', () => {
-     mockedFs.readdirSync.mockImplementation((dirPath): MockDirent[] => {
-       const parentPath = dirPath.toString();
-       if (parentPath === '/test') {
-         return [
-           createMockDirent('file1.txt', false, parentPath),
-           createMockDirent('exclude_me.txt', false, parentPath),
-           createMockDirent('dir1', true, parentPath),
-         ];
-       }
-       return [];
-     });
+    mockedFs.readdirSync.mockImplementation((dirPath): MockDirent[] => {
+      const parentPath = dirPath.toString();
+      if (parentPath === '/test') {
+        return [
+          createMockDirent('file1.txt', false, parentPath),
+          createMockDirent('exclude_me.txt', false, parentPath),
+          createMockDirent('dir1', true, parentPath),
+        ];
+      }
+      return [];
+    });
 
-     const excludePatterns = [/exclude_me\.txt/];
-     const result = scanDirectory('/test', excludePatterns);
-     // ... (assertions remain the same) ...
-     expect(result.children).toHaveLength(2);
-     expect(result.tokens).toBe(100);
-   });
+    const excludePatterns = [/exclude_me\.txt/];
+    const result = scanDirectory('/test', excludePatterns);
+    // ... (assertions remain the same) ...
+    expect(result.children).toHaveLength(2);
+    expect(result.tokens).toBe(100);
+  });
 
   it('createFileData should wrap scanDirectory result in a root object', () => {
     const fileData = createFileData('/test');
@@ -567,42 +585,42 @@ describe('fileScanner', () => {
   });
 
   it('should handle errors during file system operations gracefully', () => {
-     mockedFs.readdirSync.mockImplementation(() => {
-       throw new Error('Permission denied');
-     });
-     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {}); // Use jest.spyOn
+    mockedFs.readdirSync.mockImplementation(() => {
+      throw new Error('Permission denied');
+    });
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {}); // Use jest.spyOn
 
-     const result = scanDirectory('/test');
-     // ... (assertions remain the same) ...
-     expect(result.children).toEqual([]);
-     expect(console.error).toHaveBeenCalled();
+    const result = scanDirectory('/test');
+    // ... (assertions remain the same) ...
+    expect(result.children).toEqual([]);
+    expect(console.error).toHaveBeenCalled();
 
-     errorSpy.mockRestore(); // Restore console.error
-   });
+    errorSpy.mockRestore(); // Restore console.error
+  });
 
-   it('should sort children with folders first, then alphabetically', () => {
-     mockedFs.readdirSync.mockImplementation((dirPath): MockDirent[] => {
-       const parentPath = dirPath.toString();
-       if (parentPath === '/test') {
-         return [
-           createMockDirent('z_file.txt', false, parentPath),
-           createMockDirent('a_folder', true, parentPath),
-           createMockDirent('b_file.txt', false, parentPath),
-           createMockDirent('x_folder', true, parentPath),
-         ];
-       }
-       return [];
-     });
+  it('should sort children with folders first, then alphabetically', () => {
+    mockedFs.readdirSync.mockImplementation((dirPath): MockDirent[] => {
+      const parentPath = dirPath.toString();
+      if (parentPath === '/test') {
+        return [
+          createMockDirent('z_file.txt', false, parentPath),
+          createMockDirent('a_folder', true, parentPath),
+          createMockDirent('b_file.txt', false, parentPath),
+          createMockDirent('x_folder', true, parentPath),
+        ];
+      }
+      return [];
+    });
 
-     const result = scanDirectory('/test');
-     // ... (assertions remain the same) ...
-     expect(result.children?.map(c => c.name)).toEqual([
-       'a_folder',
-       'x_folder',
-       'b_file.txt',
-       'z_file.txt',
-     ]);
-   });
+    const result = scanDirectory('/test');
+    // ... (assertions remain the same) ...
+    expect(result.children?.map((c) => c.name)).toEqual([
+      'a_folder',
+      'x_folder',
+      'b_file.txt',
+      'z_file.txt',
+    ]);
+  });
 });
 ```
 
@@ -697,9 +715,9 @@ flowchart TD
 
 ## Dependencies
 
-*   **Keep:** `@testing-library/react`, `jsdom`
-*   **Add:** `bun-types` (dev dependency)
-*   **Remove:** `vitest`, `@vitest/coverage-v8`, `@testing-library/jest-dom`
+- **Keep:** `@testing-library/react`, `jsdom`
+- **Add:** `bun-types` (dev dependency)
+- **Remove:** `vitest`, `@vitest/coverage-v8`, `@testing-library/jest-dom`
 
 ## Key Differences from Vitest Plan
 

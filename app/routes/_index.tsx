@@ -24,10 +24,10 @@ export async function loader() {
   // but the directory itself should be shown (and marked as pending).
   const excludeContentPatterns = [
     /node_modules\/.+/, // Matches anything inside node_modules
-    /\.git\/.+/,        // Matches anything inside .git
-    /build\/.+/,        // Matches anything inside build
-    /public\/.+/,       // Matches anything inside public
-    /memory-bank\/.+/   // Matches anything inside memory-bank
+    /\.git\/.+/, // Matches anything inside .git
+    /build\/.+/, // Matches anything inside build
+    /public\/.+/, // Matches anything inside public
+    /memory-bank\/.+/, // Matches anything inside memory-bank
   ];
 
   // Scan the directory excluding specified patterns
@@ -41,11 +41,15 @@ export async function loader() {
 export default function Home() {
   // Assert the type since useLoaderData might be undefined initially
   const fileData = useLoaderData() as FileData;
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [localFileData, setLocalFileData] = useState<FileData>(fileData);
 
   // Toggle checkbox state recursively
-  const toggleCheckboxRecursive = (node: FileNode, targetPath: string[], currentPath: string[]): FileNode => {
+  const toggleCheckboxRecursive = (
+    node: FileNode,
+    targetPath: string[],
+    currentPath: string[]
+  ): FileNode => {
     const isMatch = currentPath.join('/') === targetPath.join('/');
 
     let newChecked = node.checked;
@@ -55,17 +59,17 @@ export default function Home() {
 
     let newChildren = node.children;
     if (node.children) {
-      newChildren = node.children.map(child =>
+      newChildren = node.children.map((child) =>
         toggleCheckboxRecursive(child, targetPath, [...currentPath, child.name])
       );
       // If it's the target folder, update children's checked state as well
       if (isMatch && node.type === 'folder') {
-        newChildren = newChildren.map(child => ({ ...child, checked: newChecked }));
+        newChildren = newChildren.map((child) => ({ ...child, checked: newChecked }));
         // Recursively update grandchildren etc.
         const updateGrandChildren = (n: FileNode): FileNode => ({
           ...n,
           checked: newChecked,
-          children: n.children?.map(updateGrandChildren)
+          children: n.children?.map(updateGrandChildren),
         });
         newChildren = newChildren.map(updateGrandChildren);
       }
@@ -75,13 +79,17 @@ export default function Home() {
   };
 
   const toggleCheckbox = (path: string[]) => {
-    setLocalFileData(prevData => ({
-      root: toggleCheckboxRecursive(prevData.root, path, [prevData.root.name])
+    setLocalFileData((prevData) => ({
+      root: toggleCheckboxRecursive(prevData.root, path, [prevData.root.name]),
     }));
   };
 
   // Toggle folder expansion
-  const toggleFolderRecursive = (node: FileNode, targetPath: string[], currentPath: string[]): FileNode => {
+  const toggleFolderRecursive = (
+    node: FileNode,
+    targetPath: string[],
+    currentPath: string[]
+  ): FileNode => {
     const isMatch = currentPath.join('/') === targetPath.join('/');
 
     let newExpanded = node.expanded;
@@ -91,7 +99,7 @@ export default function Home() {
 
     let newChildren = node.children;
     if (node.children) {
-      newChildren = node.children.map(child =>
+      newChildren = node.children.map((child) =>
         toggleFolderRecursive(child, targetPath, [...currentPath, child.name])
       );
     }
@@ -100,18 +108,24 @@ export default function Home() {
   };
 
   const toggleFolder = (path: string[]) => {
-    setLocalFileData(prevData => ({
-      root: toggleFolderRecursive(prevData.root, path, [prevData.root.name])
+    setLocalFileData((prevData) => ({
+      root: toggleFolderRecursive(prevData.root, path, [prevData.root.name]),
     }));
   };
 
   // Recursive function to render file tree
-  const renderFileTree = (node: FileNode, path: string[] = [node.name], level = 0): React.ReactNode => {
+  const renderFileTree = (
+    node: FileNode,
+    path: string[] = [node.name],
+    level = 0
+  ): React.ReactNode => {
     const currentPath = path; // Path already includes current node name
 
     return (
       <div key={currentPath.join('/')} style={{ marginLeft: `${level * 16}px` }}>
-        <div className={`flex items-center py-1 ${node.isPending ? 'text-blue-500 opacity-70' : ''}`}>
+        <div
+          className={`flex items-center py-1 ${node.isPending ? 'text-blue-500 opacity-70' : ''}`}
+        >
           <Checkbox
             className="mr-2"
             checked={node.checked}
@@ -120,14 +134,15 @@ export default function Home() {
             disabled={node.isPending} // Disable checkbox for pending items
           />
 
-          {node.type === 'folder' && !node.isPending && ( // Don't show toggle for pending folders
-            <span className="mr-1 cursor-pointer" onClick={() => toggleFolder(currentPath)}>
-              {node.expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </span>
-          )}
+          {node.type === 'folder' &&
+            !node.isPending && ( // Don't show toggle for pending folders
+              <span className="mr-1 cursor-pointer" onClick={() => toggleFolder(currentPath)}>
+                {node.expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </span>
+            )}
           {node.type === 'folder' && node.isPending && (
             // Placeholder for pending folders - keep alignment
-            <span className="mr-1 w-4 inline-block"></span>
+            <span className="mr-1 inline-block w-4"></span>
           )}
 
           <label
@@ -138,19 +153,21 @@ export default function Home() {
           </label>
           {!node.isPending && (
             // Don't show tokens for pending folders
-            <span className={`text-xs text-gray-500 ${!node.checked ? 'line-through opacity-50' : ''}`}>
+            <span
+              className={`text-xs text-gray-500 ${!node.checked ? 'line-through opacity-50' : ''}`}
+            >
               ({node.tokens} tokens)
             </span>
           )}
-          {node.isPending && (
-            <span className="text-xs text-blue-500 italic">(pending scan)</span>
-          )}
+          {node.isPending && <span className="text-xs text-blue-500 italic">(pending scan)</span>}
         </div>
 
         {node.type === 'folder' && node.expanded && node.children && !node.isPending && (
           // Don't render children for pending folders
           <div>
-            {node.children.map((child: FileNode) => renderFileTree(child, [...currentPath, child.name], level + 1))}
+            {node.children.map((child: FileNode) =>
+              renderFileTree(child, [...currentPath, child.name], level + 1)
+            )}
           </div>
         )}
       </div>
@@ -159,28 +176,31 @@ export default function Home() {
 
   const handleVibe = () => {
     // Handle the VIBE button click
-    console.log("VIBE clicked with text:", searchText);
+    console.log('VIBE clicked with text:', searchText);
     // TODO: Implement actual VIBE functionality - filter nodes based on search?
   };
 
   return (
-    <div className="bg-gray-900 text-gray-100 p-4 min-h-screen font-sans">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-900 p-4 font-sans text-gray-100">
+      <div className="mx-auto max-w-4xl">
         {/* Search bar and VIBE button */}
-        <div className="flex mb-4 space-x-2 sticky top-4 bg-gray-900 py-2 z-10">
+        <div className="sticky top-4 z-10 mb-4 flex space-x-2 bg-gray-900 py-2">
           <Input
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Filter files or add context..."
-            className="flex-grow bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:ring-pink-500 focus:border-pink-500"
+            className="flex-grow border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-pink-500 focus:ring-pink-500"
           />
-          <Button onClick={handleVibe} className="bg-pink-600 hover:bg-pink-700 text-white font-bold">
+          <Button
+            onClick={handleVibe}
+            className="bg-pink-600 font-bold text-white hover:bg-pink-700"
+          >
             VIBE
           </Button>
         </div>
 
         {/* File tree */}
-        <div className="bg-gray-800 p-4 rounded-md text-white font-mono text-sm border border-gray-700 shadow-lg mt-4">
+        <div className="mt-4 rounded-md border border-gray-700 bg-gray-800 p-4 font-mono text-sm text-white shadow-lg">
           {renderFileTree(localFileData.root)}
         </div>
       </div>

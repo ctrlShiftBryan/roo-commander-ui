@@ -5,7 +5,7 @@ import path from 'node:path';
 export interface FileNode {
   name: string;
   tokens: number;
-  type: "file" | "folder";
+  type: 'file' | 'folder';
   checked: boolean;
   expanded?: boolean;
   children?: FileNode[];
@@ -37,17 +37,17 @@ export function scanDirectory(
   const baseName = path.basename(directoryPath);
 
   // Check if directory should be marked as pending
-  const isPending = isPendingPatterns.some(pattern => pattern.test(directoryPath));
+  const isPending = isPendingPatterns.some((pattern) => pattern.test(directoryPath));
 
-  if (excludePatterns.some(pattern => pattern.test(directoryPath))) {
+  if (excludePatterns.some((pattern) => pattern.test(directoryPath))) {
     return {
       name: baseName,
       tokens: 0,
-      type: "folder",
+      type: 'folder',
       checked: true,
       expanded: false,
       children: [],
-      isPending
+      isPending,
     };
   }
 
@@ -61,11 +61,11 @@ export function scanDirectory(
       const entryPath = path.join(directoryPath, entry.name);
 
       // Skip excluded directories/files based on the exclude pattern
-      if (excludePatterns.some(pattern => pattern.test(entryPath))) {
+      if (excludePatterns.some((pattern) => pattern.test(entryPath))) {
         continue;
       }
 
-      const entryIsPending = isPendingPatterns.some(pattern => pattern.test(entryPath));
+      const entryIsPending = isPendingPatterns.some((pattern) => pattern.test(entryPath));
 
       if (entry.isDirectory()) {
         // If the directory itself matches a pending pattern, mark it and don't recurse
@@ -73,11 +73,11 @@ export function scanDirectory(
           children.push({
             name: entry.name,
             tokens: 0, // Pending folders don't contribute tokens directly
-            type: "folder",
+            type: 'folder',
             checked: true,
             expanded: false,
             children: [],
-            isPending: true
+            isPending: true,
           });
         } else {
           const subDir = scanDirectory(entryPath, excludePatterns, isPendingPatterns);
@@ -89,9 +89,9 @@ export function scanDirectory(
         children.push({
           name: entry.name,
           tokens: fileTokens,
-          type: "file",
+          type: 'file',
           checked: true,
-          isPending: false // Files are not marked pending individually here
+          isPending: false, // Files are not marked pending individually here
         });
         totalTokens += fileTokens;
       }
@@ -110,11 +110,11 @@ export function scanDirectory(
   return {
     name: baseName,
     tokens: totalTokens,
-    type: "folder",
+    type: 'folder',
     checked: true,
     expanded: true, // Root node starts expanded
     children,
-    isPending
+    isPending,
   };
 }
 
