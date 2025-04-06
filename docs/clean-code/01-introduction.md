@@ -39,3 +39,4 @@ improvement. Beat up the code instead!
 9. [Error Handling](./09-error-handling.md)
 10. [Project Standards](./10-project-standards.md)
 11. [Comments](./11-comments.md)
+12. [Project Structure](./12-project-structure.md)
