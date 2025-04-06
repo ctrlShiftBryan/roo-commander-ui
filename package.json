@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "docker:dev": "docker-compose up --build",
-    "docker:build": "docker build . -t local-debug-build"
+    "docker:build": "docker build . -t local-debug-build",
+    "check": "bun typecheck && bun test && bun lint:fix && bun format"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -41,7 +42,9 @@
     "@react-router/dev": "^7.4.1",
     "@react-router/fs-routes": "^7.4.1",
     "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^20",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
@@ -49,9 +52,11 @@
     "eslint": "^9.23.0",
     "eslint-plugin-react": "^7.37.4",
     "globals": "^16.0.0",
+    "jsdom": "^26.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "react-router-devtools": "^1.1.0",
+    "resize-observer-polyfill": "^1.5.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.28.0",

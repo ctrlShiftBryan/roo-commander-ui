@@ -1,0 +1,8 @@
+# bunfig.toml
+
+[test]
+# Preload the setup file before running tests
+preload = ["./tests/setup.ts"]
+
+# Optionally specify the root directory for tests if needed
+# root = "./tests"
