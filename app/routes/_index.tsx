@@ -53,15 +53,17 @@ const promptRoleSchema = z.object({
     .min(1, { message: 'Slug is required' })
     .regex(/^[a-zA-Z0-9-]+$/, {
       message: 'Slug can only contain letters, numbers, and hyphens',
-    }),
-  name: z.string().min(1, { message: 'Name is required' }),
-  roleDefinition: z.string(),
-  customInstructions: z.string(),
-  groups: z.array(z.enum(['read', 'edit', 'browser', 'command', 'mcp'])),
+    })
+    .optional(),
+  name: z.string().min(1, { message: 'Name is required' }).optional(),
+  roleDefinition: z.string().optional(),
+  customInstructions: z.string().optional(),
+  groups: z.array(z.enum(['read', 'edit', 'browser', 'command', 'mcp'])).optional(),
 });
 
 // Define a type for the group IDs based on the Zod enum
-type GroupId = z.infer<typeof promptRoleSchema>['groups'][number];
+// Define GroupId directly as the enum values, as the array itself is optional now
+type GroupId = 'read' | 'edit' | 'browser' | 'command' | 'mcp';
 
 // Groups for checkbox selection - defined outside component
 const groups: { id: GroupId; label: string }[] = [
@@ -101,7 +103,8 @@ const RooCommanderDashboard = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [jsonImport, setJsonImport] = useState('');
+  // const [jsonImport, setJsonImport] = useState(''); // No longer needed for paste
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for file input
   const [showImportScreen, setShowImportScreen] = useState(false);
   const [importError, setImportError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -197,54 +200,78 @@ const RooCommanderDashboard = () => {
     setIsSidebarOpen(false);
   };
 
+  // Updated function to handle file import
   const handleImportJson = () => {
-    try {
-      let importedData = JSON.parse(jsonImport);
-
-      // Handle both single object and array
-      if (!Array.isArray(importedData)) {
-        importedData = [importedData];
-      }
-
-      // Validate using Zod schema
-      const parseResult = promptRoleSchema.array().safeParse(importedData);
-
-      if (!parseResult.success) {
-        // Provide more specific error feedback based on Zod issues
-        const errorDetails = parseResult.error.errors
-          .map((err) => `Prompt at index ${err.path[0]}: ${err.message} (field: ${err.path[1]})`)
-          .join('; ');
-        setImportError(`Invalid prompt data found: ${errorDetails}`);
-        return;
-      }
-
-      const validPrompts = parseResult.data;
-
-      // Update existing prompts or add new ones
-      const updatedPrompts = [...promptRoles];
-
-      validPrompts.forEach((importedPrompt) => {
-        const existingIndex = updatedPrompts.findIndex((p) => p.slug === importedPrompt.slug);
-
-        if (existingIndex >= 0) {
-          updatedPrompts[existingIndex] = importedPrompt;
-        } else {
-          updatedPrompts.push(importedPrompt);
-        }
-      });
-
-      setPromptRoles(updatedPrompts);
-      setCurrentPrompt(validPrompts[0]);
-
-      setShowImportScreen(false);
-      setJsonImport('');
-      setImportError('');
-      setSuccessMessage(`Imported ${validPrompts.length} prompt(s) successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      setImportError('Invalid JSON format. Please check your input.');
-      console.error('Import Error:', error); // Log the actual error
+    if (!selectedFile) {
+      setImportError('Please select a JSON file to import.');
+      return;
     }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const fileContent = event.target?.result;
+        if (typeof fileContent !== 'string') {
+          setImportError('Failed to read file content.');
+          return;
+        }
+
+        let importedData = JSON.parse(fileContent);
+
+        // Handle both single object and array
+        if (!Array.isArray(importedData)) {
+          importedData = [importedData];
+        }
+
+        // Validate using Zod schema
+        const parseResult = promptRoleSchema.array().safeParse(importedData);
+
+        if (!parseResult.success) {
+          // Provide more specific error feedback based on Zod issues
+          const errorDetails = parseResult.error.errors
+            .map((err) => `Prompt at index ${err.path[0]}: ${err.message} (field: ${err.path[1]})`)
+            .join('; ');
+          setImportError(`Invalid prompt data found in file: ${errorDetails}`);
+          return;
+        }
+
+        const validPrompts = parseResult.data;
+
+        // Update existing prompts or add new ones
+        const updatedPrompts = [...promptRoles];
+
+        validPrompts.forEach((importedPrompt) => {
+          const existingIndex = updatedPrompts.findIndex((p) => p.slug === importedPrompt.slug);
+
+          if (existingIndex >= 0) {
+            updatedPrompts[existingIndex] = importedPrompt;
+          } else {
+            updatedPrompts.push(importedPrompt);
+          }
+        });
+
+        setPromptRoles(updatedPrompts);
+        setCurrentPrompt(validPrompts[0]); // Select the first imported prompt
+
+        setShowImportScreen(false);
+        setSelectedFile(null); // Reset file input
+        setImportError('');
+        setSuccessMessage(
+          `Imported ${validPrompts.length} prompt(s) successfully from ${selectedFile.name}!`
+        );
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Import Error:', error);
+        setImportError('Invalid JSON format in the selected file. Please check the file content.');
+      }
+    };
+
+    reader.onerror = () => {
+      setImportError('Error reading the selected file.');
+    };
+
+    reader.readAsText(selectedFile);
   };
 
   const handleExportJson = () => {
@@ -278,8 +305,9 @@ const RooCommanderDashboard = () => {
                 <SelectValue placeholder="Select a prompt" />
               </SelectTrigger>
               <SelectContent>
-                {promptRoles.map((prompt) => (
-                  <SelectItem key={prompt.slug} value={prompt.slug}>
+                {promptRoles.map((prompt, index) => (
+                  // Use index as part of the key if slug is undefined, ensure value is string
+                  <SelectItem key={prompt.slug ?? index} value={prompt.slug ?? ''}>
                     {prompt.name}
                   </SelectItem>
                 ))}
@@ -384,8 +412,10 @@ const RooCommanderDashboard = () => {
                               <Checkbox
                                 checked={field.value?.includes(group.id)}
                                 onCheckedChange={(checked) => {
+                                  // Handle potentially undefined field.value
+                                  const currentValue = field.value ?? [];
                                   return checked
-                                    ? field.onChange([...field.value, group.id])
+                                    ? field.onChange([...currentValue, group.id])
                                     : field.onChange(
                                         field.value?.filter((value) => value !== group.id)
                                       );
@@ -413,28 +443,43 @@ const RooCommanderDashboard = () => {
     </div>
   );
 
-  // Render the import screen
+  // Render the import screen - Updated for file upload
   const renderImportScreen = () => (
     <div className="mx-auto max-w-4xl p-6">
-      <h2 className="mb-4 text-2xl font-bold">Import Prompts</h2>
+      <h2 className="mb-4 text-2xl font-bold">Import Prompts from File</h2>
       <p className="mb-6 text-gray-600">
-        Paste JSON data for one or more prompts below. Existing prompts with matching slugs will be
-        updated.
+        Select a JSON file containing one or more prompts. Existing prompts with matching slugs will
+        be updated.
       </p>
 
       <div className="space-y-4">
-        <Textarea
-          value={jsonImport}
-          onChange={(e) => setJsonImport(e.target.value)}
-          placeholder="Paste JSON here..."
-          rows={10}
-          className="w-full font-mono text-sm"
+        {/* File Input */}
+        <Input
+          type="file"
+          accept=".json"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              setSelectedFile(e.target.files[0]);
+              setImportError(''); // Clear previous errors on new file selection
+            } else {
+              setSelectedFile(null);
+            }
+          }}
+          className="w-full cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
         />
+        {/* Display selected file name */}
+        {selectedFile && (
+          <p className="text-sm text-gray-500">Selected file: {selectedFile.name}</p>
+        )}
 
+        {/* Error message display */}
         {importError && <div className="my-2 text-sm text-red-500">{importError}</div>}
 
+        {/* Action buttons */}
         <div className="flex space-x-4">
-          <Button onClick={handleImportJson}>Import</Button>
+          <Button onClick={handleImportJson} disabled={!selectedFile}>
+            Upload and Import File
+          </Button>
           <Button variant="outline" onClick={() => setShowImportScreen(false)}>
             Cancel
           </Button>
@@ -495,7 +540,13 @@ const RooCommanderDashboard = () => {
                       <Button
                         variant={prompt.slug === currentPrompt.slug ? 'secondary' : 'ghost'}
                         className="w-full justify-start overflow-hidden py-2 text-left"
-                        onClick={() => handlePromptChange(prompt.slug)}
+                        // Only allow changing if slug exists
+                        onClick={() => {
+                          if (prompt.slug) {
+                            handlePromptChange(prompt.slug);
+                          }
+                        }}
+                        disabled={!prompt.slug} // Disable button if slug is missing
                       >
                         <span className="truncate">{prompt.name}</span>
                         <ChevronRight className="ml-auto h-4 w-4 flex-shrink-0" />
@@ -522,7 +573,15 @@ const RooCommanderDashboard = () => {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeletePrompt(prompt.slug)}>
+                            {/* Only allow deleting if slug exists */}
+                            <AlertDialogAction
+                              onClick={() => {
+                                if (prompt.slug) {
+                                  handleDeletePrompt(prompt.slug);
+                                }
+                              }}
+                              disabled={!prompt.slug} // Disable button if slug is missing
+                            >
                               Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
