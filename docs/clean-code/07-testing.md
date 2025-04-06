@@ -97,7 +97,7 @@ describe('getUserGreeting', () => {
   it('should return the correct greeting', () => {
     const name = 'Alice';
     const greeting = getUserGreeting(name);
-    expect(greeting).toMatchInlineSnapshot(`'Hello, Alice!'`);
+    expect(greeting).toMatchInlineSnapshot(\`'Hello, Alice!'\`);
   });
 });
 ```
@@ -190,7 +190,7 @@ describe('notifyUserOfLogin', () => {
     const result = await notifyUserOfLogin('123', stubSendEmail);
 
     // Test focuses on behavior/outcome
-    expect(result).toMatchInlineSnapshot(`true`);
+    expect(result).toMatchInlineSnapshot(\`true\`);
   });
 });
 ```
@@ -201,6 +201,73 @@ The good example is better because it:
 - Focuses on testing the outcome rather than implementation details
 - Won't break if you change how emails are formatted or sent
 - Is more resilient to refactoring
+
+### Testing React Components with @testing-library/react
+
+When testing React components, use `@testing-library/react` along with the Bun test runner (`bun:test`). This library encourages testing components in a way that resembles how users interact with them, focusing on behavior rather than implementation details.
+
+**Guiding Principles:**
+
+- **Query by accessible attributes:** Prefer queries like `getByRole`, `getByLabelText`, `getByPlaceholderText`, `getByText`, and `getByDisplayValue`. Avoid querying by CSS selectors or implementation details.
+- **Test behavior, not implementation:** Focus on what the component _does_ from a user's perspective. Does it render the correct text? Does clicking a button trigger the expected outcome?
+- **Integrate with Bun:** `@testing-library/react` works seamlessly with `bun:test`. Use `describe`, `it`, and `expect` from `bun:test`.
+
+**Good Example:**
+
+Let's test a simple `Greeting` component:
+
+_Component (`src/components/Greeting.tsx`):_
+
+```tsx
+import React from 'react';
+
+interface GreetingProps {
+  name: string;
+}
+
+export function Greeting({ name }: GreetingProps) {
+  return <div>Hello, {name}!</div>;
+}
+```
+
+_Test (`src/components/Greeting.test.tsx`):_
+
+```tsx
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { expect, describe, it } from 'bun:test';
+
+import { Greeting } from './Greeting'; // Assuming component is in the same directory or adjust path
+
+// Follows "One Top-Level Describe Per File"
+describe('Greeting Component', () => {
+  // Follows "Single concept per test" and "The name of the test should reveal its intention"
+  it('should render the correct greeting message for a given name', () => {
+    const testName = 'World';
+    // Render the component
+    render(<Greeting name={testName} />);
+
+    // Query the DOM for the expected text (User-facing)
+    const headingElement = screen.getByText(`Hello, ${testName}!`);
+
+    // Assert that the element is in the document
+    // Using toMatchInlineSnapshot for the element's presence/content check indirectly
+    // Or more directly:
+    expect(headingElement).toBeDefined(); // Basic presence check
+    // For simple text content, snapshotting the textContent is clear:
+    expect(headingElement.textContent).toMatchInlineSnapshot(\`'Hello, World!'\`); // Follows "Prefer Inline Snapshots"
+  });
+
+  it('should render a different greeting message for another name', () => {
+    const testName = 'Bun';
+    render(<Greeting name={testName} />);
+    const headingElement = screen.getByText(`Hello, ${testName}!`);
+    expect(headingElement.textContent).toMatchInlineSnapshot(\`'Hello, Bun!'\`);
+  });
+});
+```
+
+This approach aligns with the F.I.R.S.T principles (Fast, Independent, Repeatable, Self-Validating, Timely - assuming written alongside the component) and focuses on a single concept per test.
 
 ### One Top-Level Describe Per File
 
@@ -215,13 +282,13 @@ import { expect, describe, it } from 'bun:test';
 // Multiple top-level describe blocks in one file
 describe('UserAuthentication', () => {
   it('should validate user credentials', () => {
-    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(`true`);
+    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(\`true\`);
   });
 });
 
 describe('UserRegistration', () => {
   it('should register new users', () => {
-    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(`true`);
+    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(\`true\`);
   });
 });
 
@@ -229,13 +296,13 @@ describe('UserRegistration', () => {
 describe('UserManagement', () => {
   describe('Profile', () => {
     it('should update user profile', () => {
-      expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(`true`);
+      expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(\`true\`);
     });
   });
 
   describe('Preferences', () => {
     it('should save user preferences', () => {
-      expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(`true`);
+      expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(\`true\`);
     });
   });
 });
@@ -250,11 +317,11 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserAuthentication', () => {
   it('should validate user credentials', () => {
-    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(`true`);
+    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(\`true\`);
   });
 
   it('should reject invalid credentials', () => {
-    expect(validateCredentials('user', 'wrong')).toMatchInlineSnapshot(`false`);
+    expect(validateCredentials('user', 'wrong')).toMatchInlineSnapshot(\`false\`);
   });
 });
 ```
@@ -266,11 +333,11 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserRegistration', () => {
   it('should register new users', () => {
-    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(`true`);
+    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(\`true\`);
   });
 
   it('should prevent duplicate usernames', () => {
-    expect(registerUser('existing', 'password123')).toMatchInlineSnapshot(`false`);
+    expect(registerUser('existing', 'password123')).toMatchInlineSnapshot(\`false\`);
   });
 });
 ```
@@ -282,11 +349,11 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserProfile', () => {
   it('should update user profile', () => {
-    expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(`true`);
+    expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(\`true\`);
   });
 
   it('should save user preferences', () => {
-    expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(`true`);
+    expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(\`true\`);
   });
 });
 ```
