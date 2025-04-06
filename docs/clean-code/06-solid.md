@@ -149,7 +149,7 @@ The best explanation for this is if you have a parent class and a child class, t
 class Rectangle {
   constructor(
     protected width: number = 0,
-    protected height: number = 0,
+    protected height: number = 0
   ) {}
 
   setColor(color: string): this {
@@ -218,7 +218,7 @@ abstract class Shape {
 class Rectangle extends Shape {
   constructor(
     private readonly width = 0,
-    private readonly height = 0,
+    private readonly height = 0
   ) {
     super();
   }

@@ -167,10 +167,7 @@ describe('notifyUserOfLogin', () => {
 
     // Test focuses on implementation details
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      'user-123@example.com',
-      'New login detected',
-    );
+    expect(mockSendEmail).toHaveBeenCalledWith('user-123@example.com', 'New login detected');
   });
 });
 ```
@@ -218,17 +215,13 @@ import { expect, describe, it } from 'bun:test';
 // Multiple top-level describe blocks in one file
 describe('UserAuthentication', () => {
   it('should validate user credentials', () => {
-    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(`true`);
   });
 });
 
 describe('UserRegistration', () => {
   it('should register new users', () => {
-    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(`true`);
   });
 });
 
@@ -236,17 +229,13 @@ describe('UserRegistration', () => {
 describe('UserManagement', () => {
   describe('Profile', () => {
     it('should update user profile', () => {
-      expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(
-        `true`,
-      );
+      expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(`true`);
     });
   });
 
   describe('Preferences', () => {
     it('should save user preferences', () => {
-      expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(
-        `true`,
-      );
+      expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(`true`);
     });
   });
 });
@@ -261,9 +250,7 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserAuthentication', () => {
   it('should validate user credentials', () => {
-    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(validateCredentials('user', 'password123')).toMatchInlineSnapshot(`true`);
   });
 
   it('should reject invalid credentials', () => {
@@ -279,15 +266,11 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserRegistration', () => {
   it('should register new users', () => {
-    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(registerUser('newuser', 'password123')).toMatchInlineSnapshot(`true`);
   });
 
   it('should prevent duplicate usernames', () => {
-    expect(registerUser('existing', 'password123')).toMatchInlineSnapshot(
-      `false`,
-    );
+    expect(registerUser('existing', 'password123')).toMatchInlineSnapshot(`false`);
   });
 });
 ```
@@ -299,15 +282,11 @@ import { expect, describe, it } from 'bun:test';
 
 describe('UserProfile', () => {
   it('should update user profile', () => {
-    expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(updateProfile(123, { name: 'New Name' })).toMatchInlineSnapshot(`true`);
   });
 
   it('should save user preferences', () => {
-    expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(
-      `true`,
-    );
+    expect(savePreferences(123, { theme: 'dark' })).toMatchInlineSnapshot(`true`);
   });
 });
 ```

@@ -15,7 +15,7 @@ import { writeFile } from 'fs';
 function downloadPage(
   url: string,
   saveTo: string,
-  callback: (error: Error, content?: string) => void,
+  callback: (error: Error, content?: string) => void
 ) {
   get(url, (error, response) => {
     if (error) {
@@ -41,7 +41,7 @@ downloadPage(
     } else {
       console.log(content);
     }
-  },
+  }
 );
 ```
 
@@ -58,10 +58,7 @@ function downloadPage(url: string, saveTo: string): Promise<string> {
   return get(url).then((response) => write(saveTo, response));
 }
 
-downloadPage(
-  'https://en.wikipedia.org/wiki/Robert_Cecil_Martin',
-  'article.html',
-)
+downloadPage('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', 'article.html')
   .then((content) => console.log(content))
   .catch((error) => console.error(error));
 ```
@@ -94,10 +91,7 @@ function downloadPage(url: string, saveTo: string): Promise<string> {
   return get(url).then((response) => write(saveTo, response));
 }
 
-downloadPage(
-  'https://en.wikipedia.org/wiki/Robert_Cecil_Martin',
-  'article.html',
-)
+downloadPage('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', 'article.html')
   .then((content) => console.log(content))
   .catch((error) => console.error(error));
 ```
@@ -118,9 +112,7 @@ async function downloadPage(url: string): Promise<string> {
 
 // somewhere in an async function
 try {
-  const content = await downloadPage(
-    'https://en.wikipedia.org/wiki/Robert_Cecil_Martin',
-  );
+  const content = await downloadPage('https://en.wikipedia.org/wiki/Robert_Cecil_Martin');
   await write('article.html', content);
   console.log(content);
 } catch (error) {

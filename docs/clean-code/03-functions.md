@@ -25,12 +25,7 @@ This has a few advantages:
 **Bad:**
 
 ```ts
-function createMenu(
-  title: string,
-  body: string,
-  buttonText: string,
-  cancellable: boolean,
-) {
+function createMenu(title: string, body: string, buttonText: string, cancellable: boolean) {
   // ...
 }
 
@@ -330,8 +325,7 @@ function createMenu(config: MenuConfig) {
   config.title = config.title || 'Foo';
   config.body = config.body || 'Bar';
   config.buttonText = config.buttonText || 'Baz';
-  config.cancellable =
-    config.cancellable !== undefined ? config.cancellable : true;
+  config.cancellable = config.cancellable !== undefined ? config.cancellable : true;
 
   // ...
 }
@@ -357,7 +351,7 @@ function createMenu(config: MenuConfig) {
       buttonText: 'Baz',
       cancellable: true,
     },
-    config,
+    config
   );
 
   // ...
@@ -600,7 +594,7 @@ const contributions = [
 
 const totalOutput = contributions.reduce(
   (totalLines, output) => totalLines + output.linesOfCode,
-  0,
+  0
 );
 ```
 

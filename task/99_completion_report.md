@@ -1,41 +1,25 @@
-# Task Completion Report: TASK-CODE-20250405-172338
+# Completion Report: TASK-CODE-20250406-024726
 
-**Objective:** Implement the plan defined in `task/plan.md`.
+## Task Summary
 
-**Summary:** The task has been successfully completed according to the plan and custom instructions.
+Implemented code review suggestions from `project_journal/formal_docs/code_review_TASK-CODE-REVIEWER-20250406-024505__index_tsx.md` into `app/routes/_index.tsx`.
 
-**Actions Taken:**
+## Changes Applied
 
-1.  **Deleted Files:**
-    - Created and executed `task/01_delete_files.sh` to delete:
-      - `app/lib/fileScanner.ts`
-      - `app/lib/fileScanner.test.ts`
-2.  **Updated Index Route:**
-    - Replaced the content of `app/routes/_index.tsx` with the specified "Hello World" component using `write_to_file`.
-3.  **Addressed TS Error:**
-    - Identified a missing `bun-types` dependency causing a TypeScript error.
-    - Created and executed `task/02_install_bun_types.sh` to install the dependency.
-4.  **Fixed Lint Error:**
-    - Identified and fixed a lint error (`require` vs `import`) in `dev_tools/bundle_modes.js` using `apply_diff`.
-5.  **Linted and Formatted:**
-    - Created and executed `task/03_lint_format.sh` (`bun run lint:fix && bun run format`). The command completed successfully after fixing the lint error.
-6.  **Ran Tests:**
-    - Created and executed `task/04_run_tests.sh` (`bun test`). The command completed successfully (no tests found as expected).
-7.  **Ran Typecheck:**
-    - Created and executed `task/05_run_typecheck.sh` (`bun typecheck`). The command completed successfully.
-8.  **Checked Rules File:**
-    - Checked for `task/rules.md` using `list_files`. The file was not found, so rule 6f was skipped.
+- Moved `promptRoleSchema` and `groups` definitions outside the component scope.
+- Removed commented-out `localStorage` code blocks.
+- Implemented save logic in `handlePromptChange` using `form.trigger()` and `form.handleSubmit(onFormSubmit)`.
+- Updated `handleAddNewPrompt` to generate a unique slug using `Date.now()`.
+- Updated `handleImportJson` to use Zod schema (`promptRoleSchema.array().safeParse()`) for validation.
+- Fixed various linting and TypeScript errors introduced during the refactoring.
 
-**Verification:**
+## Verification Steps
 
-- All required files were deleted.
-- `app/routes/_index.tsx` contains the new code.
-- `bun test` passed.
-- `bun typecheck` passed.
-- `bun lint:fix` passed (after manual fix).
-- `bun format` passed.
+- **Tests:** Ran `bun test` via `task/06_run_tests.sh`. (Passed - No specific tests found)
+- **Type Check:** Ran `bun typecheck` via `task/07_run_typecheck.sh`. (Passed)
+- **Linting:** Ran `bun lint:fix` via `task/08_lint_fix.sh`. (Passed)
+- **Formatting:** Ran `bun format` via `task/09_format.sh`. (Passed)
 
-**Next Steps (Manual Verification):**
+## Conclusion
 
-- Run `bun run dev` and check the root URL (`/`) for the "Hello World" page.
-- Run `bun run build` to ensure the build process completes without errors.
+The requested code review suggestions have been successfully implemented in `app/routes/_index.tsx`, and all required checks (tests, type check, linting, formatting) have passed.

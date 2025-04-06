@@ -92,7 +92,7 @@ class UserManager {
   // I'm still forced to pass and instance of `emailSender`.
   constructor(
     private readonly db: Database,
-    private readonly emailSender: EmailSender,
+    private readonly emailSender: EmailSender
   ) {}
 
   async getUser(id: number): Promise<User> {
@@ -167,7 +167,7 @@ You might be wondering then, "when should I use inheritance?" It depends on your
 class Employee {
   constructor(
     private readonly name: string,
-    private readonly email: string,
+    private readonly email: string
   ) {}
 
   // ...
@@ -179,7 +179,7 @@ class EmployeeTaxData extends Employee {
     name: string,
     email: string,
     private readonly ssn: string,
-    private readonly salary: number,
+    private readonly salary: number
   ) {
     super(name, email);
   }
@@ -196,7 +196,7 @@ class Employee {
 
   constructor(
     private readonly name: string,
-    private readonly email: string,
+    private readonly email: string
   ) {}
 
   setTaxData(ssn: string, salary: number): Employee {
@@ -210,7 +210,7 @@ class Employee {
 class EmployeeTaxData {
   constructor(
     public readonly ssn: string,
-    public readonly salary: number,
+    public readonly salary: number
   ) {}
 
   // ...
