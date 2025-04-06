@@ -56,13 +56,13 @@ global.FileReader = class MockFileReader implements EventTarget {
   // Add other properties/methods if your component uses them
 } as unknown as typeof FileReader; // Use unknown for type casting
 describe('PromptEditor Component', () => {
-  it('should render without errors and display the main title', () => {
+  it('should render without errors and display the main title', async () => {
     // Render the component
     render(<PromptEditor />);
 
     // Check if a key element (the main title) is rendered
     // Using a regex to be slightly more flexible with potential whitespace changes
-    const titleElement = screen.getByText(/Roo Commander Dashboard/i);
+    const titleElement = await screen.findByText(/Roo Commander Dashboard/i);
 
     // Assert that the element is present in the document
     expect(titleElement).toBeDefined();

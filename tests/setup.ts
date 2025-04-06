@@ -21,6 +21,7 @@ global.getComputedStyle = dom.window.getComputedStyle; // Add this line
 // Add missing globals needed by Radix UI
 global.DocumentFragment = dom.window.DocumentFragment;
 global.ResizeObserver = ResizeObserver; // Use the polyfill
+global.Event = dom.window.Event; // Ensure Event constructor is available
 
 // Assign other common globals needed by React/Testing Library
 global.HTMLElement = dom.window.HTMLElement;
